@@ -25,5 +25,5 @@ if __name__ == "__main__":
     print("Proportion of photoelectric effect : {:.2f}".format(proportion['photoelectric']))
     print("Proportion of Compton effect : {:.2f}".format(proportion['compton']))
     print("Proportion of pair production : {:.2f}".format(proportion['pair_production']))
-    
+    theorical_spectrum(energy, E_fc, E_retro)
 

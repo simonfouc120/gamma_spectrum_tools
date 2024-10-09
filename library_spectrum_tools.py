@@ -27,7 +27,6 @@ detectors_Z_avg = {
     }
 }
 
-print(detectors_Z_avg)
 
 
 
@@ -98,11 +97,11 @@ def estimated_proportion(energy, Z):
     dict: approximate proportions of the three effects
     """
     # Estimating proportions based on energy range
-    if energy < 0.1:  # < 100 keV
+    if energy < 100 :  # < 100 keV
         photo_prop = 0.8 + 0.2 * (Z / 100)  # Increases with Z
         compton_prop = 0.2
         pair_prop = 0.0
-    elif energy < 1.022:  # Between 100 keV and 1 MeV
+    elif energy < 1022:  # Between 100 keV and 1 MeV
         photo_prop = 0.2 * (Z / 100)
         compton_prop = 0.8 - 0.2 * (Z / 100)
         pair_prop = 0.0
@@ -111,7 +110,6 @@ def estimated_proportion(energy, Z):
         compton_prop = 0.5 - 0.1 * (Z / 100)
         pair_prop = 0.4 + 0.6 * (Z / 100)  # Increases strongly with Z
 
-    # Normalize to ensure the sum is 1
     total = photo_prop + compton_prop + pair_prop
     proportions = {
         'photoelectric': photo_prop / total,
@@ -119,3 +117,26 @@ def estimated_proportion(energy, Z):
         'pair_production': pair_prop / total
     }
     return proportions
+
+def theorical_spectrum(E0, Efc, Eretro):
+    # define a spectrum "theorical_spectrum" (initialized to 0) with a large amount of bins and energies from 0 to about E0 x 1.2 and put energies corresponding to E0, Efc and Eretro to 1
+    energies = np.linspace(0, E0 * 1.2, 1000)
+
+    theorical_spectrum = np.zeros_like(energies)
+    theorical_spectrum[np.argmin(np.abs(energies - E0))] = 1
+    theorical_spectrum[np.argmin(np.abs(energies - Efc))] = 1
+    theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1
+    # i want tp specify in the plot the energies of the photoelectric effect, the Compton front and the retrodiffusion
+    # show the spectrum
+    plt.figure("Theorical Spectrum")
+    plt.plot(energies, theorical_spectrum, label="Theorical Spectrum", color = "black")
+    plt.axvline(x=E0, color='r', linestyle='--', label=f'Photoelectric Effect: {E0:.2f} keV')
+    plt.axvline(x=Efc, color='g', linestyle='--', label=f'Compton Front: {Efc:.2f} keV')
+    plt.axvline(x=Eretro, color='b', linestyle='--', label=f'Retrodiffusion: {Eretro:.2f} keV')
+    plt.title("Theorical Spectrum")
+    plt.ylabel("Intensity")
+    plt.xlabel("Energy [keV]")
+    plt.legend()
+    plt.show()
+    return theorical_spectrum
+
