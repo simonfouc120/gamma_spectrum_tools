@@ -116,6 +116,12 @@ def estimated_proportion(energy, Z):
         'compton': compton_prop / total,
         'pair_production': pair_prop / total
     }
+
+    plt.figure("Proportions of the photons-electrons interactions")
+    plt.pie(proportions.values(), labels=proportions.keys(), autopct='%1.1f%%')
+    plt.title("Proportions of the effects")
+    plt.show()
+
     return proportions
 
 def theorical_spectrum(E0, Efc, Eretro):
