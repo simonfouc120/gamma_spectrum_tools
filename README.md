@@ -1,4 +1,4 @@
-# gamma_spectrum_tools
+# Gamma spectrum tools
 
 
 Calcul de la diffusion compton
