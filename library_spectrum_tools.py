@@ -31,10 +31,22 @@ detectors_Z_avg = {
 EMCE = 511  # keV
 
 
-def compton_diff(E0) : 
+def calculate_energy(E0, teta):
+    """
+    Calculate the energy of the photon after Compton scattering.
+
+    Parameters:
+    E0 (float): Energy of the incident photon in keV
+    teta (float): Angle of deviation in degrees
+
+    Returns:
+    float: Energy of the photon after scattering
+    """
+    return float(E0 / (1 + (E0 / 511) * (1 - np.cos(np.deg2rad(teta)))))
+
+def compton_diff(E0) :
     """
     This function calculates the energy of the photon and the electron after a Compton diffusion.
-    It also plots the energy of the photon and the electron as a function of the angle of deviation.
 
     Parameters:
     E0 (float): Energy of the incident photon in keV
@@ -47,7 +59,7 @@ def compton_diff(E0) :
     E_photon = np.array([])
     E_electron = np.array([])
     for teta in range(360):
-        En = float(E0 / (1 + (E0 / 511) * (1 - np.cos((teta * 2 * np.pi) / 360))))
+        En = calculate_energy(E0, teta)
         E_photon = np.append(E_photon, En)
         E_electron = np.append(E_electron, float(E0 - En))
         if teta == 180:
@@ -134,20 +146,24 @@ def theorical_spectrum(proportion, E0):
     energies = np.linspace(0, E0 * 1.2, 1000)
     theorical_spectrum = np.zeros_like(energies)
     theorical_spectrum[np.argmin(np.abs(energies - E0))] = 1
-
-    plt.figure("Theorical Spectrum")
-    plt.plot(energies, theorical_spectrum, label="Theorical Spectrum", color = "black")
-    plt.axvline(x=E0, color='r', linestyle='--', label=f'Photoelectric Effect: {E0:.2f} keV')
     if proportion['compton'] != 0:
-        Eretro, Efc = compton_diff(E0)
+        Eretro = calculate_energy(E0, 180)
+        Efc = E0 - Eretro
         theorical_spectrum[np.argmin(np.abs(energies - Efc))] = 1
         theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1
-        plt.axvline(x=Efc, color='g', linestyle='--', label=f'Compton Front: {Efc:.2f} keV')
-        plt.axvline(x=Eretro, color='b', linestyle='--', label=f'Retrodiffusion: {Eretro:.2f} keV')
+        
     if proportion['pair_production'] != 0:
         E_single_escape, E_double_escape = escape_peaks(E0)
         theorical_spectrum[np.argmin(np.abs(energies - E_single_escape))] = 1
         theorical_spectrum[np.argmin(np.abs(energies - E_double_escape))] = 1
+    # show the spectrum
+    plt.figure("Theorical Spectrum")
+    plt.plot(energies, theorical_spectrum, label="Theorical Spectrum", color = "black")
+    plt.axvline(x=E0, color='r', linestyle='--', label=f'Photoelectric Effect: {E0:.2f} keV')
+    if proportion['compton'] != 0:
+        plt.axvline(x=Efc, color='g', linestyle='--', label=f'Compton Front: {Efc:.2f} keV')
+        plt.axvline(x=Eretro, color='b', linestyle='--', label=f'Retrodiffusion: {Eretro:.2f} keV')
+    if proportion['pair_production'] != 0:
         plt.axvline(x=E_single_escape, color='m', linestyle='--', label=f'Single Escape Peak: {E_single_escape:.2f} keV')
         plt.axvline(x=E_double_escape, color='c', linestyle='--', label=f'Double Escape Peak: {E_double_escape:.2f} keV')
     plt.title("Theorical Spectrum")
@@ -156,4 +172,5 @@ def theorical_spectrum(proportion, E0):
     plt.legend()
     plt.show()
     return theorical_spectrum
+
 
