@@ -15,7 +15,6 @@ Z = 32  # Atomic number of the material
 
 
 if __name__ == "__main__":
-
     geometric_eff = probabilite_photon_atteint(S, d)
     print("Geometric efficacity is {:.2f} %".format(geometric_eff * 100))
     E_retro, E_fc = compton_diff(energy)
@@ -25,7 +24,7 @@ if __name__ == "__main__":
     print("Proportion of photoelectric effect : {:.2f}".format(proportion['photoelectric']))
     print("Proportion of Compton effect : {:.2f}".format(proportion['compton']))
     print("Proportion of pair production : {:.2f}".format(proportion['pair_production']))
-    theorical_spectrum(energy, E_fc, E_retro)
+    theorical_spectrum(proportion, energy)
 
 # to do : modify intensity of the spectrum
 # to do : add pair creation into the spectrum

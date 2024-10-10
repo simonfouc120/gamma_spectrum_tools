@@ -28,6 +28,7 @@ detectors_Z_avg = {
 }
 
 
+EMCE = 511  # keV
 
 
 def compton_diff(E0) : 
@@ -62,21 +63,26 @@ def compton_diff(E0) :
     plt.legend()
     plt.show()
     return E_retro, E_fc
-    
-# On définit une fonction qui calcule la probabilité qu'un photon atteigne la surface du détecteur
-import math
 
+def escape_peaks(E0) : 
+    # add conventionnal comments
+    
+    
+    E_single_escape = E0 - EMCE
+    E_double_escape = E0 - EMCE * 2
+    return E_single_escape, E_double_escape
+    
 def probabilite_photon_atteint(S, d):
     """
-    Calcule la probabilité qu'un photon atteigne une surface S à une distance d
-    d'une source isotrope émettant des photons dans toutes les directions.
+    Calculates the probability that a photon reaches a surface S at a distance d
+    from an isotropic source emitting photons in all directions.
 
-    Paramètres :
-    S (float) : surface du détecteur (en mètres carrés)
-    d (float) : distance entre la source et le détecteur (en mètres)
+    Parameters:
+    S (float): surface area of the detector (in square meters)
+    d (float): distance between the source and the detector (in meters)
 
-    Retourne :
-    float : probabilité que le photon atteigne le détecteur
+    Returns:
+    float: probability that the photon reaches the detector
     """
     P = S / (4 * np.pi * d**2)
     return P
@@ -124,21 +130,31 @@ def estimated_proportion(energy, Z):
 
     return proportions
 
-def theorical_spectrum(E0, Efc, Eretro):
+def theorical_spectrum(proportion, E0):
     # define a spectrum "theorical_spectrum" (initialized to 0) with a large amount of bins and energies from 0 to about E0 x 1.2 and put energies corresponding to E0, Efc and Eretro to 1
     energies = np.linspace(0, E0 * 1.2, 1000)
-
     theorical_spectrum = np.zeros_like(energies)
     theorical_spectrum[np.argmin(np.abs(energies - E0))] = 1
-    theorical_spectrum[np.argmin(np.abs(energies - Efc))] = 1
-    theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1
+    if proportion['compton'] != 0:
+        Eretro, Efc = compton_diff(E0)
+        theorical_spectrum[np.argmin(np.abs(energies - Efc))] = 1
+        theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1
+        
+    if proportion['pair_production'] != 0:
+        E_single_escape, E_double_escape = escape_peaks(E0)
+        theorical_spectrum[np.argmin(np.abs(energies - E_single_escape))] = 1
+        theorical_spectrum[np.argmin(np.abs(energies - E_double_escape))] = 1
     # i want tp specify in the plot the energies of the photoelectric effect, the Compton front and the retrodiffusion
     # show the spectrum
     plt.figure("Theorical Spectrum")
     plt.plot(energies, theorical_spectrum, label="Theorical Spectrum", color = "black")
     plt.axvline(x=E0, color='r', linestyle='--', label=f'Photoelectric Effect: {E0:.2f} keV')
-    plt.axvline(x=Efc, color='g', linestyle='--', label=f'Compton Front: {Efc:.2f} keV')
-    plt.axvline(x=Eretro, color='b', linestyle='--', label=f'Retrodiffusion: {Eretro:.2f} keV')
+    if proportion['compton'] != 0:
+        plt.axvline(x=Efc, color='g', linestyle='--', label=f'Compton Front: {Efc:.2f} keV')
+        plt.axvline(x=Eretro, color='b', linestyle='--', label=f'Retrodiffusion: {Eretro:.2f} keV')
+    if proportion['pair_production'] != 0:
+        plt.axvline(x=E_single_escape, color='m', linestyle='--', label=f'Single Escape Peak: {E_single_escape:.2f} keV')
+        plt.axvline(x=E_double_escape, color='c', linestyle='--', label=f'Double Escape Peak: {E_double_escape:.2f} keV')
     plt.title("Theorical Spectrum")
     plt.ylabel("Intensity")
     plt.xlabel("Energy [keV]")
