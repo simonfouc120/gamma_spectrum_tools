@@ -10,7 +10,7 @@ from library_spectrum_tools import *
 
 S = 1.0  # detector surface in m²
 d = 2.0  # Distance between source and detector in m
-energy = 1600  # Unit : keV
+energy = 1  # Unit : keV
 Z = 32  # Atomic number of the material
 
 

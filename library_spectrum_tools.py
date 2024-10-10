@@ -131,28 +131,23 @@ def estimated_proportion(energy, Z):
     return proportions
 
 def theorical_spectrum(proportion, E0):
-    # define a spectrum "theorical_spectrum" (initialized to 0) with a large amount of bins and energies from 0 to about E0 x 1.2 and put energies corresponding to E0, Efc and Eretro to 1
     energies = np.linspace(0, E0 * 1.2, 1000)
     theorical_spectrum = np.zeros_like(energies)
     theorical_spectrum[np.argmin(np.abs(energies - E0))] = 1
-    if proportion['compton'] != 0:
-        Eretro, Efc = compton_diff(E0)
-        theorical_spectrum[np.argmin(np.abs(energies - Efc))] = 1
-        theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1
-        
-    if proportion['pair_production'] != 0:
-        E_single_escape, E_double_escape = escape_peaks(E0)
-        theorical_spectrum[np.argmin(np.abs(energies - E_single_escape))] = 1
-        theorical_spectrum[np.argmin(np.abs(energies - E_double_escape))] = 1
-    # i want tp specify in the plot the energies of the photoelectric effect, the Compton front and the retrodiffusion
-    # show the spectrum
+
     plt.figure("Theorical Spectrum")
     plt.plot(energies, theorical_spectrum, label="Theorical Spectrum", color = "black")
     plt.axvline(x=E0, color='r', linestyle='--', label=f'Photoelectric Effect: {E0:.2f} keV')
     if proportion['compton'] != 0:
+        Eretro, Efc = compton_diff(E0)
+        theorical_spectrum[np.argmin(np.abs(energies - Efc))] = 1
+        theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1
         plt.axvline(x=Efc, color='g', linestyle='--', label=f'Compton Front: {Efc:.2f} keV')
         plt.axvline(x=Eretro, color='b', linestyle='--', label=f'Retrodiffusion: {Eretro:.2f} keV')
     if proportion['pair_production'] != 0:
+        E_single_escape, E_double_escape = escape_peaks(E0)
+        theorical_spectrum[np.argmin(np.abs(energies - E_single_escape))] = 1
+        theorical_spectrum[np.argmin(np.abs(energies - E_double_escape))] = 1
         plt.axvline(x=E_single_escape, color='m', linestyle='--', label=f'Single Escape Peak: {E_single_escape:.2f} keV')
         plt.axvline(x=E_double_escape, color='c', linestyle='--', label=f'Double Escape Peak: {E_double_escape:.2f} keV')
     plt.title("Theorical Spectrum")
