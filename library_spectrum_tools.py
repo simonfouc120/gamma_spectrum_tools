@@ -23,7 +23,8 @@ detectors_Z_avg = {
     "semiconductors": {
         "HPGe": 32,
         "CdTe": 50,
-        "CdZnTe": 45.5
+        "CdZnTe": 45.5,
+        "Si": 14        
     }
 }
 
@@ -44,7 +45,7 @@ def calculate_energy(E0, teta):
     """
     return float(E0 / (1 + (E0 / 511) * (1 - np.cos(np.deg2rad(teta)))))
 
-def compton_diff(E0) :
+def compton_diff(E0, E_photon = np.array([]), E_electron = np.array([])) :
     """
     This function calculates the energy of the photon and the electron after a Compton diffusion.
 
@@ -56,8 +57,6 @@ def compton_diff(E0) :
     E_fc (float): Energy of the electron after retro-diffusion
     """
     
-    E_photon = np.array([])
-    E_electron = np.array([])
     for teta in range(360):
         En = calculate_energy(E0, teta)
         E_photon = np.append(E_photon, En)
@@ -78,8 +77,6 @@ def compton_diff(E0) :
 
 def escape_peaks(E0) : 
     # add conventionnal comments
-    
-    
     E_single_escape = E0 - EMCE
     E_double_escape = E0 - EMCE * 2
     return E_single_escape, E_double_escape
@@ -100,9 +97,7 @@ def probabilite_photon_atteint(S, d):
     return P
 
 
-
-
-def estimated_proportion(energy, Z):
+def estimated_proportion(energy, Z, plot=True):
     """
     Approximate estimation of the proportions of photoelectric effect, Compton scattering,
     and pair production based on photon energy and atomic number Z of the material.
@@ -135,11 +130,12 @@ def estimated_proportion(energy, Z):
         'pair_production': pair_prop / total
     }
 
-    plt.figure("Proportions of the photons-electrons interactions")
-    plt.pie(proportions.values(), labels=proportions.keys(), autopct='%1.1f%%')
-    plt.title("Proportions of the effects")
-    plt.show()
-
+    # Plot the proportions of photon-electron interactions
+    if plot:
+        plt.figure("Proportions of Photon-Electron Interactions")
+        plt.pie(proportions.values(), labels=proportions.keys(), autopct='%1.1f%%')
+        plt.title("Proportions of Photon-Electron Interaction Effects")
+        plt.show()
     return proportions
 
 def theorical_spectrum(proportion, E0):
@@ -150,7 +146,7 @@ def theorical_spectrum(proportion, E0):
         Eretro = calculate_energy(E0, 180)
         Efc = E0 - Eretro
         theorical_spectrum[np.argmin(np.abs(energies - Efc))] = 1
-        theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1
+        theorical_spectrum[np.argmin(np.abs(energies - Eretro))] = 1        
         
     if proportion['pair_production'] != 0:
         E_single_escape, E_double_escape = escape_peaks(E0)
@@ -173,4 +169,35 @@ def theorical_spectrum(proportion, E0):
     plt.show()
     return theorical_spectrum
 
+def plot_IRM():
+    # plot energy of photoelectric effect and Compton scattering in function of incident energy of the photon
+    energies = np.linspace(0, 2000, 2000)
+    # create a 2D array with the axis x = incident energy and y = energy of the several interactions
+    IRM = np.zeros((len(energies), 3))
+    for i, energy in enumerate(energies):
+        proportion = estimated_proportion(energy, 32, plot=False)
+        IRM[i, 0] = energy
+        # retrodiffusion
+        IRM[i, 1] = calculate_energy(energy, 180) if proportion['compton'] != 0 else energy
+        # Compton front
+        IRM[i, 2] = energy - IRM[i, 1] if proportion['compton'] != 0 else IRM[i, 1]
+        
+    plt.figure("IRM")
+    plt.plot(IRM[:, 0], IRM[:, 1], label="Compton Back scattering")
+    plt.plot(IRM[:, 0], IRM[:, 2], label="Compton front")
+    plt.plot(IRM[:, 0], IRM[:, 0], label="Photoelectric Effect")
+    plt.title("Incident Energy vs Interaction Energy")
+    plt.ylabel("Interaction Energy [keV]")
+    plt.xlabel("Incident Energy [keV]")
+    plt.legend()
+    plt.show()
+    # add intensity of the spectrum
+    # add pair creation into the spectrum
+    # Z dependency of the proportion calculation
+    
 
+    return IRM
+
+
+    
+    

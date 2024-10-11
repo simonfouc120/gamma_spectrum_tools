@@ -25,7 +25,7 @@ if __name__ == "__main__":
     print("Proportion of Compton effect : {:.2f}".format(proportion['compton']))
     print("Proportion of pair production : {:.2f}".format(proportion['pair_production']))
     theorical_spectrum(proportion, energy)
-
+    plot_IRM()
 # to do : modify intensity of the spectrum
 # to do : add pair creation into the spectrum
 # to do : search library to improve proportion calculation
